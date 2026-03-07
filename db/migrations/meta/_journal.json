@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1772874094405,
+      "tag": "0000_left_blonde_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1772876597784,
+      "tag": "0001_silky_charles_xavier",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772878846460,
+      "tag": "0002_natural_the_stranger",
+      "breakpoints": true
+    }
+  ]
+}
