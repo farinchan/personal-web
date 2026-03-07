@@ -1,0 +1,85 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: personal-web-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-strongrootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-personal_web}
+      MYSQL_USER: ${DB_USER:-appuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-apppassword}
+    ports:
+      - "${DB_EXTERNAL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-strongrootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: personal-web-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      # Database
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-appuser}
+      DB_PASSWORD: ${DB_PASSWORD:-apppassword}
+      DB_NAME: ${DB_NAME:-personal_web}
+      # Session
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD:-your-secret-session-password-at-least-32-chars-long!!}
+      # Site URL (your domain)
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      # WhatsApp Chatery (optional)
+      CHATERY_URI: ${CHATERY_URI:-}
+      CHATERY_API_KEY: ${CHATERY_API_KEY:-}
+      # Node
+      NODE_ENV: production
+    volumes:
+      - uploads_data:/app/.output/public/uploads
+    networks:
+      - app-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: personal-web-migrate
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-appuser}
+      DB_PASSWORD: ${DB_PASSWORD:-apppassword}
+      DB_NAME: ${DB_NAME:-personal_web}
+    command: npx drizzle-kit migrate
+    networks:
+      - app-network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    profiles:
+      - migrate
+
+volumes:
+  mysql_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
