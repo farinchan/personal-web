@@ -38,7 +38,7 @@ const navLinks = [
     <!-- Footer -->
     <footer class="border-t py-8 no-print">
       <div class="container mx-auto px-4 text-center text-sm text-[var(--muted-foreground)]">
-        <p>&copy; {{ new Date().getFullYear() }} Fajri-Gariskode. All rights reserved.</p>
+        <p>&copy; {{ new Date().getFullYear() }} Fajri Rinaldi Chan. All rights reserved.</p>
       </div>
     </footer>
   </div>
