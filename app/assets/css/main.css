@@ -77,6 +77,9 @@
 .prose h1 { @apply text-3xl font-bold mt-8 mb-4; }
 .prose h2 { @apply text-2xl font-semibold mt-6 mb-3; }
 .prose h3 { @apply text-xl font-semibold mt-5 mb-2; }
+.prose h4 { @apply text-lg font-semibold mt-4 mb-2; }
+.prose h5 { @apply text-base font-semibold mt-4 mb-1; }
+.prose h6 { @apply text-sm font-semibold mt-3 mb-1 text-gray-500; }
 .prose p { @apply my-4 leading-relaxed; }
 .prose a { @apply text-blue-600 underline hover:text-blue-800; }
 .prose ul { @apply list-disc pl-6 my-4; }
@@ -91,3 +94,38 @@
 .prose th { @apply border border-gray-300 px-4 py-2 bg-gray-50 font-semibold text-left; }
 .prose td { @apply border border-gray-300 px-4 py-2; }
 .prose hr { @apply my-8 border-gray-200; }
+
+/* Task lists in prose */
+.prose ul[data-type="taskList"] {
+  @apply list-none pl-0 my-4;
+}
+.prose ul[data-type="taskList"] li {
+  @apply flex items-start gap-2 my-1;
+}
+.prose ul[data-type="taskList"] li input[type="checkbox"] {
+  @apply mt-1.5 w-4 h-4 accent-blue-600;
+}
+
+/* Highlight */
+.prose mark {
+  @apply rounded px-0.5;
+}
+
+/* Subscript & Superscript */
+.prose sub { font-size: 0.75em; }
+.prose sup { font-size: 0.75em; }
+
+/* Math block rendering */
+.prose .math-block-rendered {
+  @apply my-6 text-center overflow-x-auto;
+}
+
+/* YouTube embed in prose */
+.prose div[data-youtube-video] {
+  @apply my-6;
+}
+.prose div[data-youtube-video] iframe {
+  @apply w-full rounded-lg;
+  aspect-ratio: 16 / 9;
+  border: none;
+}

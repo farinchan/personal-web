@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css', 'katex/dist/katex.min.css'],
 
   runtimeConfig: {
     db: {

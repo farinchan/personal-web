@@ -76,7 +76,9 @@ const toc = computed(() => {
 })
 
 // Body is already HTML from the rich text editor
-// Add IDs to headings for TOC linking
+// Add IDs to headings for TOC linking + render math formulas
+const { renderMathInHtml } = useRenderMath()
+
 const renderedBody = computed(() => {
   if (!post.value?.body) return ''
   let html = post.value.body
@@ -85,6 +87,8 @@ const renderedBody = computed(() => {
     const id = text.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
     return `<h${level}${attrs} id="${id}">${text}</h${level}>`
   })
+  // Render math formulas (KaTeX)
+  html = renderMathInHtml(html)
   return html
 })
 
