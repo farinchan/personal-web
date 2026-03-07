@@ -28,6 +28,8 @@ export default defineNuxtConfig({
     session: {
       password: process.env.NUXT_SESSION_PASSWORD || '',
     },
+    chapiUrl: process.env.CHATERY_URI || 'http://localhost:3000',
+    chapiKey: process.env.CHATERY_API_KEY || '',
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     },
