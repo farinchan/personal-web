@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Eye, ListTree, ChevronDown } from 'lucide-vue-next'
+import { ArrowLeft, Eye, ListTree, ChevronDown, Download, Quote, Copy, Check, ChevronUp } from 'lucide-vue-next'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -33,7 +33,7 @@ useSeoMeta({
   twitterImageAlt: () => post.value?.title || '',
   articlePublishedTime: () => post.value?.publishedAt || '',
   articleModifiedTime: () => post.value?.updatedAt || '',
-  articleAuthor: ['Fajri Gariskode'],
+  articleAuthor: ['Fajri Rinaldi Chan'],
   articleSection: 'Blog',
   articleTag: () => post.value?.tags?.map((t: any) => t.name) || [],
 })
@@ -46,7 +46,7 @@ useSchemaOrg([
     datePublished: post.value?.publishedAt || '',
     dateModified: post.value?.updatedAt || '',
     author: {
-      name: 'Fajri Gariskode',
+      name: 'Fajri Rinaldi Chan',
     },
   }),
 ])
@@ -126,6 +126,197 @@ function scrollToHeading(id: string) {
     mobileTocOpen.value = false
   }
 }
+
+// ===== PDF Download =====
+const isGeneratingPdf = ref(false)
+
+async function downloadPdf() {
+  if (isGeneratingPdf.value || !post.value) return
+  isGeneratingPdf.value = true
+
+  try {
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas-pro'),
+    ])
+
+    const articleEl = document.querySelector('.prose') as HTMLElement
+    if (!articleEl) return
+
+    // Build an off-screen wrapper with title + metadata + content
+    const wrapper = document.createElement('div')
+    wrapper.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;padding:40px 50px;font-family:Georgia,serif;background:#fff;color:#000;'
+    document.body.appendChild(wrapper)
+
+    // Title
+    const titleEl = document.createElement('h1')
+    titleEl.style.cssText = 'font-size:22px;font-weight:bold;margin:0 0 8px;line-height:1.3;color:#111;'
+    titleEl.textContent = post.value.title
+    wrapper.appendChild(titleEl)
+
+    // Author & Date
+    const metaEl = document.createElement('p')
+    metaEl.style.cssText = 'font-size:11px;color:#666;margin:0 0 4px;'
+    const dateStr = post.value.publishedAt
+      ? new Date(post.value.publishedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+      : ''
+    metaEl.textContent = `Fajri Rinaldi Chan • ${dateStr}`
+    wrapper.appendChild(metaEl)
+
+    // URL
+    const urlEl = document.createElement('p')
+    urlEl.style.cssText = 'font-size:9px;color:#999;margin:0 0 16px;'
+    urlEl.textContent = postUrl
+    wrapper.appendChild(urlEl)
+
+    // Separator
+    const hr = document.createElement('hr')
+    hr.style.cssText = 'border:none;border-top:1px solid #ddd;margin:0 0 20px;'
+    wrapper.appendChild(hr)
+
+    // Clone article content
+    const contentClone = articleEl.cloneNode(true) as HTMLElement
+    contentClone.style.cssText = 'font-size:13px;line-height:1.7;color:#222;'
+    // Ensure images have max-width
+    contentClone.querySelectorAll('img').forEach((img) => {
+      img.style.maxWidth = '100%'
+      img.style.height = 'auto'
+    })
+    wrapper.appendChild(contentClone)
+
+    // Wait a tick for rendering
+    await new Promise(r => setTimeout(r, 100))
+
+    // Render to canvas
+    const canvas = await html2canvas(wrapper, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      windowWidth: 794,
+    })
+
+    document.body.removeChild(wrapper)
+
+    // PDF dimensions (A4)
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const margin = 10
+    const contentWidth = pageWidth - margin * 2
+
+    const imgWidth = canvas.width
+    const imgHeight = canvas.height
+    const ratio = contentWidth / imgWidth
+    const scaledHeight = imgHeight * ratio
+
+    // Split across pages if needed
+    const maxContentHeight = pageHeight - margin * 2
+    let yOffset = 0
+    let page = 0
+
+    while (yOffset < scaledHeight) {
+      if (page > 0) pdf.addPage()
+
+      // Calculate source crop
+      const srcY = (yOffset / ratio)
+      const srcH = Math.min(maxContentHeight / ratio, imgHeight - srcY)
+      const destH = srcH * ratio
+
+      // Create a cropped canvas for this page
+      const pageCanvas = document.createElement('canvas')
+      pageCanvas.width = imgWidth
+      pageCanvas.height = srcH
+      const ctx = pageCanvas.getContext('2d')!
+      ctx.drawImage(canvas, 0, srcY, imgWidth, srcH, 0, 0, imgWidth, srcH)
+
+      const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.92)
+      pdf.addImage(pageImgData, 'JPEG', margin, margin, contentWidth, destH)
+
+      yOffset += maxContentHeight
+      page++
+    }
+
+    const safeSlug = post.value.slug || slug
+    pdf.save(`${safeSlug}.pdf`)
+  } catch (err) {
+    console.error('PDF generation failed:', err)
+    alert('Gagal membuat PDF. Silakan coba lagi.')
+  } finally {
+    isGeneratingPdf.value = false
+  }
+}
+
+// ===== Cite This Page =====
+const showCitation = ref(false)
+const copiedFormat = ref('')
+const activeCitationTab = ref<'apa' | 'mla' | 'chicago' | 'ieee' | 'bibtex'>('apa')
+
+const authorName = 'Chan, FR.'
+const authorNameFull = 'Fajri Rinaldi Chan'
+
+const publishedDate = computed(() => {
+  if (!post.value?.publishedAt) return null
+  return new Date(post.value.publishedAt)
+})
+
+const accessDate = computed(() => new Date())
+
+function formatDateApa(date: Date) {
+  return `${date.getFullYear()}, ${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`
+}
+function formatDateMla(date: Date) {
+  return `${date.getDate()} ${date.toLocaleDateString('en-US', { month: 'short' })}. ${date.getFullYear()}`
+}
+function formatDateChicago(date: Date) {
+  return `${date.toLocaleDateString('en-US', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`
+}
+function formatDateIeee(date: Date) {
+  return `${date.toLocaleDateString('en-US', { month: 'short' })}. ${date.getDate()}, ${date.getFullYear()}`
+}
+
+const citations = computed(() => {
+  if (!post.value) return {}
+  const title = post.value.title
+  const pubDate = publishedDate.value
+  const accDate = accessDate.value
+
+  const pubYear = pubDate ? pubDate.getFullYear() : 'n.d.'
+
+  return {
+    apa: `${authorName} (${pubYear}). ${title}. Fajri Gariskode Blog. ${postUrl}`,
+    mla: `${authorNameFull}. "${title}." *Fajri Gariskode Blog*, ${pubDate ? formatDateMla(pubDate) : 'n.d.'}. Web. ${formatDateMla(accDate)}. <${postUrl}>.`,
+    chicago: `${authorNameFull}. "${title}." Fajri Gariskode Blog. ${pubDate ? formatDateChicago(pubDate) : 'n.d.'}. ${postUrl}.`,
+    ieee: `${authorName}, "${title}," *Fajri Gariskode Blog*, ${pubDate ? formatDateIeee(pubDate) : 'n.d.'}. [Online]. Available: ${postUrl}. [Accessed: ${formatDateIeee(accDate)}].`,
+    bibtex: `@misc{gariskode_${slug.replace(/-/g, '_')},
+  author    = {${authorNameFull}},
+  title     = {${title}},
+  year      = {${pubYear}},
+  url       = {${postUrl}},
+  note      = {Accessed: ${accDate.toISOString().split('T')[0]}}
+}`,
+  }
+})
+
+async function copyCitation(format: string) {
+  const text = citations.value[format as keyof typeof citations.value]
+  if (!text) return
+  try {
+    await navigator.clipboard.writeText(text)
+    copiedFormat.value = format
+    setTimeout(() => { copiedFormat.value = '' }, 2000)
+  } catch {
+    // Fallback
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    copiedFormat.value = format
+    setTimeout(() => { copiedFormat.value = '' }, 2000)
+  }
+}
 </script>
 
 <template>
@@ -160,6 +351,61 @@ function scrollToHeading(id: string) {
         <div class="flex items-center gap-4 text-sm text-[var(--muted-foreground)] mb-8">
           <span>{{ post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '' }}</span>
           <span class="flex items-center gap-1"><Eye class="w-4 h-4" /> {{ post.viewCount }} views</span>
+          <span class="flex-1" />
+          <button
+            @click="downloadPdf"
+            :disabled="isGeneratingPdf"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[var(--border)] rounded-md hover:bg-[var(--accent)] transition-colors disabled:opacity-50 disabled:cursor-wait"
+          >
+            <Download class="w-4 h-4" :class="{ 'animate-bounce': isGeneratingPdf }" />
+            {{ isGeneratingPdf ? 'Generating...' : 'PDF' }}
+          </button>
+          <button
+            @click="showCitation = !showCitation"
+            :class="['flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-md transition-colors', showCitation ? 'border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]' : 'border-[var(--border)] hover:bg-[var(--accent)]']"
+          >
+            <Quote class="w-4 h-4" />
+            Cite
+          </button>
+        </div>
+
+        <!-- Cite This Page Panel -->
+        <div v-if="showCitation" class="mb-8 border border-[var(--border)] rounded-lg overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-3 bg-[var(--muted)] border-b border-[var(--border)]">
+            <h3 class="text-sm font-semibold flex items-center gap-2">
+              <Quote class="w-4 h-4" /> Cite This Article
+            </h3>
+            <button @click="showCitation = false" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+              <ChevronUp class="w-4 h-4" />
+            </button>
+          </div>
+
+          <!-- Citation format tabs -->
+          <div class="flex border-b border-[var(--border)] bg-[var(--muted)]/50">
+            <button
+              v-for="tab in (['apa', 'mla', 'chicago', 'ieee', 'bibtex'] as const)"
+              :key="tab"
+              @click="activeCitationTab = tab"
+              :class="['px-4 py-2 text-xs font-medium border-b-2 transition-colors', activeCitationTab === tab ? 'border-[var(--primary)] text-[var(--primary)]' : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]']"
+            >
+              {{ tab.toUpperCase() }}
+            </button>
+          </div>
+
+          <!-- Citation content -->
+          <div class="p-4">
+            <div class="relative">
+              <pre class="text-sm leading-relaxed whitespace-pre-wrap break-words bg-[var(--muted)]/30 rounded-md p-3 pr-10 font-mono border border-[var(--border)]">{{ citations[activeCitationTab] }}</pre>
+              <button
+                @click="copyCitation(activeCitationTab)"
+                class="absolute top-2 right-2 p-1.5 rounded-md hover:bg-[var(--accent)] transition-colors"
+                :title="copiedFormat === activeCitationTab ? 'Copied!' : 'Copy'"
+              >
+                <Check v-if="copiedFormat === activeCitationTab" class="w-4 h-4 text-green-500" />
+                <Copy v-else class="w-4 h-4 text-[var(--muted-foreground)]" />
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Mobile TOC -->
