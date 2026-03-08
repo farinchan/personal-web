@@ -10,8 +10,8 @@ if (!post.value) {
   throw createError({ statusCode: 404, statusMessage: 'Artikel tidak ditemukan' })
 }
 
-const config = useRuntimeConfig()
-const siteUrl = config.public.siteUrl as string
+const requestUrl = useRequestURL()
+const siteUrl = `${requestUrl.protocol}//${requestUrl.host}`
 const postUrl = `${siteUrl}/blog/${slug}`
 const postImage = computed(() => post.value?.coverImage || undefined)
 
