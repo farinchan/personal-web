@@ -31,9 +31,10 @@ USER node
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV PORT=3000
 
-EXPOSE 3000
+# Port is configurable via docker-compose or -e flag
+# Default: 3000 if not set
+EXPOSE ${PORT:-3000}
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
