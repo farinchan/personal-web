@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LayoutDashboard, FileText, MessageSquare, Mail, User, FileText as FilePage, ArrowLeft, LogOut, Users, MessageCircle, ChevronDown } from 'lucide-vue-next'
+import { LayoutDashboard, FileText, MessageSquare, Mail, User, FileText as FilePage, ArrowLeft, LogOut, Users, MessageCircle, ChevronDown, HardDriveDownload } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
 const { loggedIn, clear } = useUserSession()
@@ -12,6 +12,7 @@ const sidebarLinks: { name: string; path: string; icon: Component }[] = [
   { name: 'Profile', path: '/admin/profile', icon: User },
   { name: 'CV', path: '/admin/cv', icon: FilePage },
   { name: 'Admin Users', path: '/admin/users', icon: Users },
+  { name: 'Backup', path: '/admin/backup', icon: HardDriveDownload },
 ]
 
 const { data: unreadCount } = await useFetch('/api/messages', {

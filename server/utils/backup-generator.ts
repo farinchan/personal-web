@@ -1,0 +1,104 @@
+import AdmZip from 'adm-zip'
+import { join } from 'path'
+import { readdir, stat } from 'fs/promises'
+import { existsSync } from 'fs'
+import { posts, tags, postTags, postLikes, comments, messages, profile, cvSections, adminUsers } from '../../db/schema'
+
+async function fetchAllTables() {
+  const db = useDB()!
+
+  const [
+    postsData,
+    tagsData,
+    postTagsData,
+    postLikesData,
+    commentsData,
+    messagesData,
+    profileData,
+    cvSectionsData,
+    adminUsersData,
+  ] = await Promise.all([
+    db.select().from(posts),
+    db.select().from(tags),
+    db.select().from(postTags),
+    db.select().from(postLikes),
+    db.select().from(comments),
+    db.select().from(messages),
+    db.select().from(profile),
+    db.select().from(cvSections),
+    db.select().from(adminUsers),
+  ])
+
+  return {
+    meta: {
+      version: 1,
+      createdAt: new Date().toISOString(),
+      tables: {
+        posts: postsData.length,
+        tags: tagsData.length,
+        postTags: postTagsData.length,
+        postLikes: postLikesData.length,
+        comments: commentsData.length,
+        messages: messagesData.length,
+        profile: profileData.length,
+        cvSections: cvSectionsData.length,
+        adminUsers: adminUsersData.length,
+      },
+    },
+    data: {
+      posts: postsData,
+      tags: tagsData,
+      postTags: postTagsData,
+      postLikes: postLikesData,
+      comments: commentsData,
+      messages: messagesData,
+      profile: profileData,
+      cvSections: cvSectionsData,
+      adminUsers: adminUsersData,
+    },
+  }
+}
+
+export async function generateDatabaseBackup(): Promise<Buffer> {
+  const backup = await fetchAllTables()
+  return Buffer.from(JSON.stringify(backup, null, 2), 'utf-8')
+}
+
+export async function generateFilesBackup(): Promise<Buffer> {
+  const uploadsDir = join(process.cwd(), 'public', 'uploads')
+  const zip = new AdmZip()
+
+  if (existsSync(uploadsDir)) {
+    const files = await readdir(uploadsDir)
+    for (const file of files) {
+      const filePath = join(uploadsDir, file)
+      const fileStat = await stat(filePath)
+      if (fileStat.isFile()) {
+        zip.addLocalFile(filePath, 'uploads')
+      }
+    }
+  }
+
+  return zip.toBuffer()
+}
+
+export async function generateFullBackup(): Promise<Buffer> {
+  const backup = await fetchAllTables()
+  const zip = new AdmZip()
+
+  zip.addFile('database.json', Buffer.from(JSON.stringify(backup, null, 2), 'utf-8'))
+
+  const uploadsDir = join(process.cwd(), 'public', 'uploads')
+  if (existsSync(uploadsDir)) {
+    const files = await readdir(uploadsDir)
+    for (const file of files) {
+      const filePath = join(uploadsDir, file)
+      const fileStat = await stat(filePath)
+      if (fileStat.isFile()) {
+        zip.addLocalFile(filePath, 'uploads')
+      }
+    }
+  }
+
+  return zip.toBuffer()
+}
