@@ -20,8 +20,28 @@ const youtube = ref('')
 const telegram = ref('')
 const website = ref('')
 const isSubmitting = ref(false)
+const isUploading = ref(false)
 const successMessage = ref('')
 const errorMessage = ref('')
+const avatarFileInput = ref<HTMLInputElement>()
+
+async function uploadAvatar() {
+  const input = avatarFileInput.value
+  if (!input?.files?.length) return
+
+  isUploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', input.files[0]!)
+    const res = await $fetch<{ url: string }>('/api/upload', { method: 'POST', body: formData })
+    avatarUrl.value = res.url
+  } catch (err: any) {
+    errorMessage.value = err.data?.statusMessage || 'Gagal upload avatar'
+  } finally {
+    isUploading.value = false
+    input.value = ''
+  }
+}
 
 // Populate form
 watchEffect(() => {
@@ -98,8 +118,33 @@ async function saveProfile() {
         <UiInput v-model="headline" placeholder="Full Stack Developer, dll." />
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Avatar URL</label>
-        <UiInput v-model="avatarUrl" placeholder="https://..." />
+        <label class="block text-sm font-medium mb-1">Avatar</label>
+        <div class="flex items-center gap-4">
+          <div v-if="avatarUrl" class="w-16 h-16 rounded-full overflow-hidden border border-[var(--border)] shrink-0">
+            <img :src="avatarUrl" alt="Avatar" class="w-full h-full object-cover" />
+          </div>
+          <div v-else class="w-16 h-16 rounded-full bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center shrink-0">
+            <span class="text-xs text-gray-400">No foto</span>
+          </div>
+          <div class="flex-1 space-y-2">
+            <input
+              ref="avatarFileInput"
+              type="file"
+              accept="image/*"
+              @change="uploadAvatar"
+              class="text-sm w-full file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 cursor-pointer"
+            />
+            <p v-if="isUploading" class="text-xs text-blue-600">Mengupload...</p>
+            <button
+              v-if="avatarUrl"
+              type="button"
+              @click="avatarUrl = ''"
+              class="text-xs text-red-500 hover:text-red-700"
+            >
+              Hapus avatar
+            </button>
+          </div>
+        </div>
       </div>
       <div>
         <label class="block text-sm font-medium mb-1">Bio</label>
