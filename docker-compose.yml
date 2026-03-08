@@ -46,7 +46,7 @@ services:
       # Node
       NODE_ENV: production
     volumes:
-      - uploads_data:/app/.output/public/uploads
+      - uploads_data:/app/uploads
     networks:
       - app-network
     depends_on:

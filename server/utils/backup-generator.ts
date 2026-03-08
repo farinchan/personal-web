@@ -65,7 +65,7 @@ export async function generateDatabaseBackup(): Promise<Buffer> {
 }
 
 export async function generateFilesBackup(): Promise<Buffer> {
-  const uploadsDir = join(process.cwd(), 'public', 'uploads')
+  const uploadsDir = getUploadsDir()
   const zip = new AdmZip()
 
   if (existsSync(uploadsDir)) {
@@ -88,7 +88,7 @@ export async function generateFullBackup(): Promise<Buffer> {
 
   zip.addFile('database.json', Buffer.from(JSON.stringify(backup, null, 2), 'utf-8'))
 
-  const uploadsDir = join(process.cwd(), 'public', 'uploads')
+  const uploadsDir = getUploadsDir()
   if (existsSync(uploadsDir)) {
     const files = await readdir(uploadsDir)
     for (const file of files) {

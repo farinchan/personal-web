@@ -24,8 +24,8 @@ COPY --from=builder /app/db ./db
 COPY --from=builder /app/drizzle.config.ts .
 COPY --from=builder /app/node_modules ./node_modules
 
-# Create uploads directory
-RUN mkdir -p /app/.output/public/uploads && chown -R node:node /app
+# Create uploads directory (persistent, mount as volume)
+RUN mkdir -p /app/uploads && chown -R node:node /app
 
 USER node
 

@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
   zip.addFile('database.json', Buffer.from(JSON.stringify(dbBackup, null, 2), 'utf-8'))
 
   // Add uploaded files
-  const uploadsDir = join(process.cwd(), 'public', 'uploads')
+  const uploadsDir = getUploadsDir()
   if (existsSync(uploadsDir)) {
     const files = await readdir(uploadsDir)
     for (const file of files) {

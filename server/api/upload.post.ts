@@ -1,5 +1,4 @@
 import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
 import { randomUUID } from 'crypto'
 
 export default defineEventHandler(async (event) => {
@@ -23,10 +22,10 @@ export default defineEventHandler(async (event) => {
   const ext = file.filename?.split('.').pop() || 'png'
   const filename = `${randomUUID()}.${ext}`
 
-  const uploadDir = join(process.cwd(), 'public', 'uploads')
+  const uploadDir = getUploadsDir()
   await mkdir(uploadDir, { recursive: true })
 
-  const filePath = join(uploadDir, filename)
+  const filePath = `${uploadDir}/${filename}`
   await writeFile(filePath, file.data)
 
   return { url: `/uploads/${filename}` }

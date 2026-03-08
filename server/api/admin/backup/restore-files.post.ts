@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     const zip = new AdmZip(file.data)
     const entries = zip.getEntries()
 
-    const uploadsDir = join(process.cwd(), 'public', 'uploads')
+    const uploadsDir = getUploadsDir()
     await mkdir(uploadsDir, { recursive: true })
 
     // Count files before restore

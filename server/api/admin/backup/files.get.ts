@@ -6,7 +6,7 @@ import { existsSync } from 'fs'
 export default defineEventHandler(async (event) => {
   await requireUserSession(event)
 
-  const uploadsDir = join(process.cwd(), 'public', 'uploads')
+  const uploadsDir = getUploadsDir()
 
   if (!existsSync(uploadsDir)) {
     throw createError({ statusCode: 404, statusMessage: 'Folder uploads tidak ditemukan' })

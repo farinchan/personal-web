@@ -104,7 +104,7 @@ export default defineEventHandler(async (event) => {
     await db.execute(sql`SET FOREIGN_KEY_CHECKS = 1`)
 
     // Restore uploaded files
-    const uploadsDir = join(process.cwd(), 'public', 'uploads')
+    const uploadsDir = getUploadsDir()
     await mkdir(uploadsDir, { recursive: true })
 
     let restoredFiles = 0
