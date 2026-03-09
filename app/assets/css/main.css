@@ -74,26 +74,67 @@
 .prose {
   @apply max-w-none;
 }
-.prose h1 { @apply text-3xl font-bold mt-8 mb-4; }
-.prose h2 { @apply text-2xl font-semibold mt-6 mb-3; }
-.prose h3 { @apply text-xl font-semibold mt-5 mb-2; }
-.prose h4 { @apply text-lg font-semibold mt-4 mb-2; }
-.prose h5 { @apply text-base font-semibold mt-4 mb-1; }
-.prose h6 { @apply text-sm font-semibold mt-3 mb-1 text-gray-500; }
-.prose p { @apply my-4 leading-relaxed; }
+.prose h1 { @apply text-3xl font-bold mt-6 mb-3; }
+.prose h2 { @apply text-2xl font-semibold mt-5 mb-2; }
+.prose h3 { @apply text-xl font-semibold mt-4 mb-1.5; }
+.prose h4 { @apply text-lg font-semibold mt-3 mb-1.5; }
+.prose h5 { @apply text-base font-semibold mt-3 mb-1; }
+.prose h6 { @apply text-sm font-semibold mt-2 mb-1 text-gray-500; }
+.prose p { @apply my-2.5 leading-normal; }
 .prose a { @apply text-blue-600 underline hover:text-blue-800; }
-.prose ul { @apply list-disc pl-6 my-4; }
-.prose ol { @apply list-decimal pl-6 my-4; }
-.prose li { @apply my-1; }
-.prose blockquote { @apply border-l-4 border-gray-300 pl-4 italic my-4 text-gray-600; }
+.prose ul { @apply list-disc pl-6 my-2.5; }
+.prose ol { @apply list-decimal pl-6 my-2.5; }
+.prose li { @apply my-0.5; }
+.prose blockquote { @apply border-l-4 border-gray-300 pl-4 italic my-3 text-gray-600; }
 .prose code { @apply bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono; }
-.prose pre { @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4; }
+.prose pre { @apply bg-gray-900 text-gray-100 rounded-lg overflow-x-auto my-3 relative; }
 .prose pre code { @apply bg-transparent p-0; }
-.prose img { @apply rounded-lg my-4 max-w-full; }
-.prose table { @apply w-full border-collapse my-4; }
+/* Shiki highlighted code blocks */
+.prose pre.shiki {
+  padding: 1rem;
+  padding-top: 2.25rem;
+}
+.prose pre.shiki code {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+.prose pre.shiki code .line:last-child::after {
+  display: none;
+}
+/* Language label on code blocks */
+.prose pre[data-language]::before,
+.prose pre.shiki::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.65rem;
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 0 0.5rem 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+.prose pre[data-language]::before {
+  content: attr(data-language);
+}
+/* Non-shiki code blocks (fallback) */
+.prose pre:not(.shiki) {
+  padding: 1rem;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.875rem;
+}
+/* Copy button area */
+.prose .code-block-wrapper {
+  position: relative;
+}
+.prose img { @apply rounded-lg my-3 max-w-full; }
+.prose table { @apply w-full border-collapse my-3; }
 .prose th { @apply border border-gray-300 px-4 py-2 bg-gray-50 font-semibold text-left; }
 .prose td { @apply border border-gray-300 px-4 py-2; }
-.prose hr { @apply my-8 border-gray-200; }
+.prose hr { @apply my-6 border-gray-200; }
 
 /* Task lists in prose */
 .prose ul[data-type="taskList"] {

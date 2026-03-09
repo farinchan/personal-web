@@ -5,8 +5,8 @@ import {
   ExternalLink,
 } from 'lucide-vue-next'
 
-const config = useRuntimeConfig()
-const siteUrl = config.public.siteUrl as string
+const requestUrl = useRequestURL()
+const siteUrl = `${requestUrl.protocol}//${requestUrl.host}`
 
 useSeoMeta({
   title: 'Profile — Fajri Gariskode',

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const siteUrl = config.public.siteUrl as string
+const requestUrl = useRequestURL()
+const siteUrl = `${requestUrl.protocol}//${requestUrl.host}`
 
 useSeoMeta({
   title: 'Hubungi Saya — Fajri Gariskode',

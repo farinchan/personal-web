@@ -37,10 +37,44 @@ import {
   Plus, Trash2, ArrowDownFromLine, ArrowUpFromLine,
   ArrowRightFromLine, ArrowLeftFromLine,
   Sigma, Pi,
-  WrapText, Eraser,
+  WrapText, Eraser, ChevronDown,
 } from 'lucide-vue-next'
 
 const lowlight = createLowlight(common)
+
+const LANGUAGES = [
+  { value: '', label: 'Auto Detect' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'python', label: 'Python' },
+  { value: 'java', label: 'Java' },
+  { value: 'c', label: 'C' },
+  { value: 'cpp', label: 'C++' },
+  { value: 'csharp', label: 'C#' },
+  { value: 'go', label: 'Go' },
+  { value: 'rust', label: 'Rust' },
+  { value: 'php', label: 'PHP' },
+  { value: 'ruby', label: 'Ruby' },
+  { value: 'swift', label: 'Swift' },
+  { value: 'kotlin', label: 'Kotlin' },
+  { value: 'sql', label: 'SQL' },
+  { value: 'bash', label: 'Bash / Shell' },
+  { value: 'html', label: 'HTML' },
+  { value: 'css', label: 'CSS' },
+  { value: 'scss', label: 'SCSS' },
+  { value: 'json', label: 'JSON' },
+  { value: 'xml', label: 'XML' },
+  { value: 'yaml', label: 'YAML' },
+  { value: 'markdown', label: 'Markdown' },
+  { value: 'dockerfile', label: 'Dockerfile' },
+  { value: 'graphql', label: 'GraphQL' },
+  { value: 'lua', label: 'Lua' },
+  { value: 'r', label: 'R' },
+  { value: 'perl', label: 'Perl' },
+  { value: 'dart', label: 'Dart' },
+  { value: 'ini', label: 'INI / TOML' },
+  { value: 'plaintext', label: 'Plain Text' },
+]
 
 const props = defineProps<{
   modelValue: string
@@ -218,11 +252,28 @@ function insertMathBlock() {
   editor.value?.commands.insertMathBlock('')
 }
 
+// Code block language
+const showCodeLangMenu = ref(false)
+const currentCodeLang = computed(() => {
+  if (!editor.value?.isActive('codeBlock')) return ''
+  return editor.value.getAttributes('codeBlock').language || ''
+})
+const currentCodeLangLabel = computed(() => {
+  const lang = LANGUAGES.find(l => l.value === currentCodeLang.value)
+  return lang?.label || currentCodeLang.value || 'Auto Detect'
+})
+
+function setCodeLanguage(language: string) {
+  editor.value?.chain().focus().updateAttributes('codeBlock', { language }).run()
+  showCodeLangMenu.value = false
+}
+
 // Close dropdowns on click outside
 function closeDropdowns(e: MouseEvent) {
   const target = e.target as HTMLElement
   if (!target.closest('.color-picker-wrapper')) showColorPicker.value = false
   if (!target.closest('.table-menu-wrapper')) showTableMenu.value = false
+  if (!target.closest('.code-lang-wrapper')) showCodeLangMenu.value = false
 }
 
 onMounted(() => {
@@ -375,6 +426,21 @@ onBeforeUnmount(() => {
         :class="['toolbar-btn', { 'is-active': editor.isActive('codeBlock') }]" title="Code Block">
         <CodeXml class="w-4 h-4" />
       </button>
+      <!-- Language selector (shows when in code block) -->
+      <div v-if="editor.isActive('codeBlock')" class="relative code-lang-wrapper">
+        <button type="button" @click.stop="showCodeLangMenu = !showCodeLangMenu"
+          class="toolbar-btn !px-2 gap-1 text-xs !min-w-0" title="Select Language">
+          <span class="truncate max-w-[80px]">{{ currentCodeLangLabel }}</span>
+          <ChevronDown class="w-3 h-3 shrink-0" />
+        </button>
+        <div v-if="showCodeLangMenu" class="absolute top-full left-0 z-50 mt-1 bg-[var(--popover)] border border-[var(--border)] rounded-lg shadow-lg w-48 max-h-64 overflow-y-auto">
+          <button v-for="lang in LANGUAGES" :key="lang.value" type="button"
+            @click="setCodeLanguage(lang.value)"
+            :class="['w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--accent)] transition-colors', { 'bg-[var(--accent)] font-medium': currentCodeLang === lang.value }]">
+            {{ lang.label }}
+          </button>
+        </div>
+      </div>
       <button type="button" @click="editor.chain().focus().toggleCode().run()"
         :class="['toolbar-btn', { 'is-active': editor.isActive('code') }]" title="Inline Code">
         <Code class="w-4 h-4" />
@@ -672,11 +738,27 @@ onBeforeUnmount(() => {
   background: #1e1e2e;
   color: #cdd6f4;
   padding: 1rem;
+  padding-top: 2rem;
   border-radius: 0.5rem;
   overflow-x: auto;
   margin: 0.75rem 0;
   font-family: monospace;
   font-size: 0.875rem;
+  position: relative;
+}
+.tiptap-editor .tiptap pre::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  color: #a6adc8;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 0 0.5rem 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  pointer-events: none;
 }
 .tiptap-editor .tiptap pre code {
   background: none;
@@ -684,6 +766,39 @@ onBeforeUnmount(() => {
   border-radius: 0;
   color: inherit;
 }
+
+/* Lowlight syntax highlighting (Catppuccin Mocha) */
+.tiptap-editor .tiptap pre .hljs-comment,
+.tiptap-editor .tiptap pre .hljs-quote { color: #6c7086; font-style: italic; }
+.tiptap-editor .tiptap pre .hljs-keyword,
+.tiptap-editor .tiptap pre .hljs-selector-tag,
+.tiptap-editor .tiptap pre .hljs-addition { color: #cba6f7; }
+.tiptap-editor .tiptap pre .hljs-number,
+.tiptap-editor .tiptap pre .hljs-literal { color: #fab387; }
+.tiptap-editor .tiptap pre .hljs-string,
+.tiptap-editor .tiptap pre .hljs-doctag,
+.tiptap-editor .tiptap pre .hljs-regexp { color: #a6e3a1; }
+.tiptap-editor .tiptap pre .hljs-title,
+.tiptap-editor .tiptap pre .hljs-section,
+.tiptap-editor .tiptap pre .hljs-built_in { color: #89b4fa; }
+.tiptap-editor .tiptap pre .hljs-name,
+.tiptap-editor .tiptap pre .hljs-tag { color: #f38ba8; }
+.tiptap-editor .tiptap pre .hljs-variable,
+.tiptap-editor .tiptap pre .hljs-template-variable { color: #f5c2e7; }
+.tiptap-editor .tiptap pre .hljs-type,
+.tiptap-editor .tiptap pre .hljs-class .hljs-title { color: #f9e2af; }
+.tiptap-editor .tiptap pre .hljs-attr,
+.tiptap-editor .tiptap pre .hljs-attribute { color: #89dceb; }
+.tiptap-editor .tiptap pre .hljs-symbol,
+.tiptap-editor .tiptap pre .hljs-bullet,
+.tiptap-editor .tiptap pre .hljs-subst,
+.tiptap-editor .tiptap pre .hljs-meta { color: #94e2d5; }
+.tiptap-editor .tiptap pre .hljs-deletion { color: #f38ba8; }
+.tiptap-editor .tiptap pre .hljs-selector-id,
+.tiptap-editor .tiptap pre .hljs-selector-class { color: #89dceb; }
+.tiptap-editor .tiptap pre .hljs-emphasis { font-style: italic; }
+.tiptap-editor .tiptap pre .hljs-strong { font-weight: 700; }
+.tiptap-editor .tiptap pre .hljs-link { text-decoration: underline; }
 
 /* Images */
 .tiptap-editor .tiptap img {

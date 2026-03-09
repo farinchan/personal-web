@@ -78,8 +78,11 @@ const toc = computed(() => {
 // Body is already HTML from the rich text editor
 // Add IDs to headings for TOC linking + render math formulas
 const { renderMathInHtml } = useRenderMath()
+const { highlightCodeBlocks } = useCodeHighlight()
 
-const renderedBody = computed(() => {
+const renderedBody = ref('')
+
+function processBody() {
   if (!post.value?.body) return ''
   let html = post.value.body
   // Add id attributes to h2/h3 for TOC navigation
@@ -90,6 +93,15 @@ const renderedBody = computed(() => {
   // Render math formulas (KaTeX)
   html = renderMathInHtml(html)
   return html
+}
+
+// Initial render (without code highlighting for SSR / fast paint)
+renderedBody.value = processBody()
+
+// Apply syntax highlighting on client after mount
+onMounted(async () => {
+  const html = processBody()
+  renderedBody.value = await highlightCodeBlocks(html)
 })
 
 // Active heading tracking on scroll

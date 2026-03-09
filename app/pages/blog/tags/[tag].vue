@@ -4,8 +4,8 @@ import { ArrowLeft, Eye } from 'lucide-vue-next'
 const route = useRoute()
 const tag = route.params.tag as string
 
-const config = useRuntimeConfig()
-const siteUrl = config.public.siteUrl as string
+const requestUrl = useRequestURL()
+const siteUrl = `${requestUrl.protocol}//${requestUrl.host}`
 
 useSeoMeta({
   title: `Tag: ${tag} — Blog Fajri Gariskode`,

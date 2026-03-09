@@ -2,8 +2,8 @@
 import { Briefcase, GraduationCap, Zap, ScrollText, Rocket, Download, MapPin, type LucideIcon } from 'lucide-vue-next'
 import { markRaw, type Component } from 'vue'
 
-const config = useRuntimeConfig()
-const siteUrl = config.public.siteUrl as string
+const requestUrl = useRequestURL()
+const siteUrl = `${requestUrl.protocol}//${requestUrl.host}`
 
 useSeoMeta({
   title: 'CV — Fajri Gariskode',

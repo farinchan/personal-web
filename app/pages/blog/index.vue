@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Eye, Heart } from 'lucide-vue-next'
 
-const config = useRuntimeConfig()
-const siteUrl = config.public.siteUrl as string
+const requestUrl = useRequestURL()
+const siteUrl = `${requestUrl.protocol}//${requestUrl.host}`
 
 useSeoMeta({
   title: 'Blog — Fajri Gariskode',
