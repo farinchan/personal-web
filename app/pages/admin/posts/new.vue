@@ -77,7 +77,10 @@ async function submitPost() {
     })
     navigateTo('/admin/posts')
   } catch (err: any) {
-    errorMessage.value = err.data?.statusMessage || 'Gagal membuat artikel'
+    const msg = err.data?.statusMessage || err.message || 'Gagal membuat artikel'
+    const status = err.statusCode || err.data?.statusCode || ''
+    errorMessage.value = status ? `[${status}] ${msg}` : msg
+    console.error('Submit post error:', err.data || err)
   } finally {
     isSubmitting.value = false
   }

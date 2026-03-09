@@ -1,11 +1,11 @@
-import { mysqlTable, int, varchar, text, boolean, datetime, index } from 'drizzle-orm/mysql-core'
+import { mysqlTable, int, varchar, text, longtext, boolean, datetime, index } from 'drizzle-orm/mysql-core'
 
 export const posts = mysqlTable('posts', {
   id: int('id').primaryKey().autoincrement(),
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
-  body: text('body').notNull(),
+  body: longtext('body').notNull(),
   coverImage: varchar('cover_image', { length: 500 }),
   isDraft: boolean('is_draft').notNull().default(true),
   viewCount: int('view_count').notNull().default(0),

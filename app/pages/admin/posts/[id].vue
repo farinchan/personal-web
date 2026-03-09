@@ -95,7 +95,10 @@ async function submitPost() {
     })
     navigateTo('/admin/posts')
   } catch (err: any) {
-    errorMessage.value = err.data?.statusMessage || 'Gagal mengupdate artikel'
+    const msg = err.data?.statusMessage || err.message || 'Gagal mengupdate artikel'
+    const status = err.statusCode || err.data?.statusCode || ''
+    errorMessage.value = status ? `[${status}] ${msg}` : msg
+    console.error('Update post error:', err.data || err)
   } finally {
     isSubmitting.value = false
   }

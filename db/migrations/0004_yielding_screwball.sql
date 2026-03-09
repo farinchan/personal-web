@@ -1,0 +1,1 @@
+ALTER TABLE `posts` MODIFY COLUMN `body` longtext NOT NULL;
