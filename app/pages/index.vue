@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Hand, Eye } from 'lucide-vue-next'
+import { Hand, Eye, Users, BookOpen } from 'lucide-vue-next'
 
 const requestUrl = useRequestURL()
 const siteUrl = `${requestUrl.protocol}//${requestUrl.host}`
@@ -17,6 +17,10 @@ useSeoMeta({
 })
 
 const { data: recentPosts } = await useFetch('/api/posts', {
+  query: { limit: 6 },
+})
+
+const { data: coursesData } = await useFetch('/api/lms/courses', {
   query: { limit: 6 },
 })
 </script>
@@ -75,6 +79,46 @@ const { data: recentPosts } = await useFetch('/api/posts', {
       </div>
       <div v-else class="text-center text-[var(--muted-foreground)] py-12">
         <p>Belum ada artikel. Nantikan segera!</p>
+      </div>
+    </section>
+
+    <!-- Public Courses -->
+    <section class="container mx-auto px-4 py-12">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold">Courses</h2>
+        <NuxtLink to="/courses" class="text-sm text-blue-600 hover:underline">Lihat semua →</NuxtLink>
+      </div>
+      <div v-if="coursesData?.courses?.length" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <NuxtLink
+          v-for="course in coursesData.courses"
+          :key="course.id"
+          :to="`/courses/${course.slug}`"
+          class="group"
+        >
+          <UiCard class="h-full overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="aspect-video bg-[var(--muted)] overflow-hidden">
+              <img
+                v-if="course.coverImage"
+                :src="course.coverImage"
+                :alt="course.title"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center text-4xl font-bold text-[var(--muted-foreground)]/30">
+                {{ course.title.charAt(0) }}
+              </div>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-lg mb-1 group-hover:text-blue-600 transition-colors">{{ course.title }}</h3>
+              <p v-if="course.description" class="text-sm text-[var(--muted-foreground)] line-clamp-2 mb-3">{{ course.description }}</p>
+              <div class="flex items-center gap-3 text-xs text-[var(--muted-foreground)]">
+                <span class="flex items-center gap-1"><Users class="w-3.5 h-3.5" /> {{ course.studentCount }} siswa</span>
+              </div>
+            </div>
+          </UiCard>
+        </NuxtLink>
+      </div>
+      <div v-else class="text-center text-[var(--muted-foreground)] py-12">
+        <p>Belum ada course yang tersedia.</p>
       </div>
     </section>
   </div>

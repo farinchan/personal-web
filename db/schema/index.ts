@@ -7,3 +7,8 @@ export { profile } from './profile'
 export { cvSections } from './cv'
 export { adminUsers } from './admin'
 export { backupJobs } from './backupJobs'
+export {
+  students, courses, enrollments, courseModules,
+  materials, materialProgress, assignments, submissions,
+  exams, examQuestions, examAttempts, discussions,
+} from './lms'

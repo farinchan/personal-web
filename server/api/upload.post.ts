@@ -2,7 +2,11 @@ import { writeFile, mkdir } from 'fs/promises'
 import { randomUUID } from 'crypto'
 
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
+  // Allow both admin and student sessions
+  const session = await getUserSession(event)
+  if (!session?.user) {
+    throw createError({ statusCode: 401, statusMessage: 'Login diperlukan' })
+  }
 
   const formData = await readMultipartFormData(event)
   if (!formData || formData.length === 0) {
@@ -10,13 +14,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const file = formData[0]
-  if (!file || !file.type?.startsWith('image/')) {
-    throw createError({ statusCode: 400, statusMessage: 'File harus berupa gambar' })
+  if (!file || !file.filename) {
+    throw createError({ statusCode: 400, statusMessage: 'File tidak valid' })
   }
 
-  // Max 5MB
-  if (file.data.length > 5 * 1024 * 1024) {
-    throw createError({ statusCode: 400, statusMessage: 'Ukuran file maksimal 5MB' })
+  // Max 10MB
+  if (file.data.length > 10 * 1024 * 1024) {
+    throw createError({ statusCode: 400, statusMessage: 'Ukuran file maksimal 10MB' })
   }
 
   const ext = file.filename?.split('.').pop() || 'png'

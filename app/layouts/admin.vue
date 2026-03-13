@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LayoutDashboard, FileText, MessageSquare, Mail, User, FileText as FilePage, ArrowLeft, LogOut, Users, MessageCircle, ChevronDown, HardDriveDownload } from 'lucide-vue-next'
+import { LayoutDashboard, FileText, MessageSquare, Mail, User, FileText as FilePage, ArrowLeft, LogOut, Users, MessageCircle, ChevronDown, HardDriveDownload, GraduationCap } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
 const { loggedIn, clear } = useUserSession()
@@ -7,6 +7,7 @@ const { loggedIn, clear } = useUserSession()
 const sidebarLinks: { name: string; path: string; icon: Component }[] = [
   { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { name: 'Posts', path: '/admin/posts', icon: FileText },
+  { name: 'Courses', path: '/admin/courses', icon: GraduationCap },
   { name: 'Komentar', path: '/admin/comments', icon: MessageSquare },
   { name: 'Pesan', path: '/admin/messages', icon: Mail },
   { name: 'Profile', path: '/admin/profile', icon: User },
